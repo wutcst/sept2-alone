@@ -1,30 +1,39 @@
-package cn.edu.whut.sept.zuul;
+package ZuulCommands;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import Commands.ACommandWords;
 
-public class CommandWords
+/**
+ * 此类是抽象命令单词类的实现，用于确定有效命令
+ * @author duoduo
+ *
+ */
+public class CommandWords extends ACommandWords
 {
-    private HashMap<String, Command> commands;
+    // 保存所有有效命令字的常量数组
+    private static final String[] validCommands = 
+    	{
+        	"go",
+        	"quit",
+        	"help",
+        	"look",
+        	"take",
+        	"drop",
+        	"give",
+            "back"
+        };
 
-    public CommandWords()
+    /**
+     *构造函数
+     */
+    public CommandWords() {}
+    
+    /** 
+     * @return the validCommands
+     * */
+    @Override
+    public  String[] getValidCommands()
     {
-        commands = new HashMap<String, Command>();
-        commands.put("go", new GoCommand());
-        commands.put("help", new HelpCommand(this));
-        commands.put("quit", new QuitCommand());
+    	return validCommands;
     }
 
-    public Command get(String word)
-    {
-        return (Command)commands.get(word);
-    }
-
-    public void showAll()
-    {
-        for(Iterator i = commands.keySet().iterator(); i.hasNext(); ) {
-            System.out.print(i.next() + "  ");
-        }
-        System.out.println();
-    }
 }
