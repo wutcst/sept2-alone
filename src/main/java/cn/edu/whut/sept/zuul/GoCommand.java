@@ -13,6 +13,7 @@ public class GoCommand extends Command
 
         Room nextRoom = game.getCurrentRoom().getExit(direction);
 
+
         if (nextRoom == null) {
             System.out.println("There is no door!");
         }
