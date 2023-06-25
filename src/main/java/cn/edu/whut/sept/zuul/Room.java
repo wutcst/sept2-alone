@@ -14,6 +14,7 @@ public class Room
         exits = new HashMap<>();
     }
 
+
     public void setExit(String direction, Room neighbor)
     {
         exits.put(direction, neighbor);
