@@ -1,4 +1,15 @@
-  branches: [ "master" ]
+name: Java CI with Maven
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  merge_group:
+    branches-ignore: [checks_requested]
+  create:
+    branches: [ "master" ]
+  delete:
+   branches: [ "master" ]
 jobs:
   build:
 
