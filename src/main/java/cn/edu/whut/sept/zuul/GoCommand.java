@@ -1,27 +1,37 @@
-package cn.edu.whut.sept.zuul;
 
-public class GoCommand extends Command
+package ZuulCommands;
+
+import Commands.ACommand;
+import Game.AGame;
+import Character.Player;
+
+/**
+ * 此命令类是 go 命令
+ * @author duoduo
+ *
+ */
+public class GoCommand extends ACommand
 {
-    public boolean execute(Game game)
+	public GoCommand(String firstWord, String secondWord, String thirdWord)
+	{
+        super(firstWord, secondWord, thirdWord);
+    }
+    
+    public GoCommand() {}
+    
+    /**
+     * go的执行命令，通过player去调用具体方法
+     */
+    @Override
+    public boolean execute(Player player)
     {
-        if(!hasSecondWord()) {
-            System.out.println("Go where?");
+        if (!hasSecondWord())
+        {
+            AGame._out.println(AGame._messages.getString("goWhere"));
+            return false;
         }
-
         String direction = getSecondWord();
-        Room currentRoom = game.getCurrentRoom();
-
-        Room nextRoom = game.getCurrentRoom().getExit(direction);
-
-
-        if (nextRoom == null) {
-            System.out.println("There is no door!");
-        }
-        else {
-            game.setCurrentRoom(nextRoom);
-            System.out.println(nextRoom.getLongDescription());
-        }
-
+        player.goRoom(direction);
         return false;
     }
 }
