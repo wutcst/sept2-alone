@@ -1,60 +1,150 @@
-package cn.edu.whut.sept.zuul;
+package Commands;
 
-/**
-*“祖尔世界”是一款非常简单的基于文本的冒险游戏。
- * 
-* 此解析器读取用户输入并尝试将其解释为“冒险”
-*命令。每次调用它时，它都会从终端读取一行，然后
-* 尝试将该行解释为两个单词的命令。它返回命令
-* 作为类命令的对象。
- *
-* 解析器有一组已知的命令字。它检查用户输入
-* 已知命令，如果输入不是已知命令之一，则
-* 返回标记为未知命令的命令对象。
-**/
+import java.util.MissingResourceException;
 import java.util.Scanner;
-/*创建parser对获取到的命令关键词进行解析*/
-public class Parser
-{
-    private CommandWords commands;
-    private Scanner reader;
 
-    public Parser()
+import Game.AGame;
+import ZuulCommands.*;
+/**
+ * Parser类.
+ *
+ * @author duoduo
+ *
+ */
+public class Parser 
+{
+    private final ACommandWords _commands;  // 保存所有有效的命令词
+    private final Scanner _reader;         // 命令输入源
+    private final String _MYPACKAGE; //包含特定于游戏的类的包的名称
+
+    public Parser(String pkg)
     {
-        commands = new CommandWords();
-        reader = new Scanner(System.in);
+        this._commands = AGame._commands;
+        this._reader = new Scanner(AGame._in.in);
+        this._MYPACKAGE = pkg + '.';
     }
-      //变量初始化
-    public Command getCommand()
+
+    /**
+     * @return 下一个命令关键词
+     */
+    public ACommand getCommand()
     {
-        String inputLine;
+        String inputLine;   // 将保存完整的输入行
         String word1 = null;
         String word2 = null;
+        String word3 = null;
 
-        System.out.print("> ");
-     //返回回车键之前的所有信息
-        inputLine = reader.nextLine();
-   //如果扫描到键入信息，分别保存两个分词后的信息
-        @SuppressWarnings("resource")
-		Scanner tokenizer = new Scanner(inputLine);
-        if(tokenizer.hasNext()) {
-            word1 = tokenizer.next();   
-            if(tokenizer.hasNext()) {
-                word2 = tokenizer.next();
+        AGame._out.print("> ");     // 打印提示
+
+        inputLine = this._reader.nextLine();
+        //在线上最多查找两个单词
+        try (Scanner tokenizer = new Scanner(inputLine)) {
+                if(tokenizer.hasNext()) {
+                    word1 = tokenizer.next();      // get first word
+                    if(tokenizer.hasNext()) {
+                        word2 = tokenizer.next();      // get second word
+                    }
+                    if(tokenizer.hasNext()) {
+                        word3 = tokenizer.next();      // get second word
+                    }
+                }
+        }
+
+        // 现在检查这个词是否已知。如果是，创建一个命令
+        // 有了它。如果没有，创建一个“null”命令。
+        try
+        {
+            word1 = AGame._messages.getString(word1); // translate it
+        }
+        catch (MissingResourceException | NullPointerException e)
+        {
+            return new UnknownCommand(word1, word2, word3);
+        }
+        if(this._commands.isCommand(word1))
+        {
+        	String cmdString = this._MYPACKAGE + word1.substring(0, 1).toUpperCase() + word1.substring(1) + "Command";
+            try
+            {
+                ACommand cmd = (ACommand) Class.forName(cmdString).newInstance();
+                cmd.addWords(word1, word2, word3);
+                //Could use the Constructor class but this is easier
+                return cmd;
             }
+            catch (ClassNotFoundException  
+                   | InstantiationException 
+                   | IllegalAccessException 
+                   | SecurityException  
+                   | IllegalArgumentException 
+                   e ) 
+            { 
+                return new UnknownCommand(word1, word2, word3);
+            } 
         }
-//对识别到的指令动作进行分析是否有效，
-        if(commands.isCommand(word1)) {
-            return new Command(word1, word2);
-        }
-        else {
-            return new Command(null, word2);
+        else
+        {
+            return new UnknownCommand(word1, word2, word3); 
         }
     }
-
-    public void showCommands()
+    /**
+    * 获取GUI层面的命令
+    */
+    public ACommand getCommandGUI(String str)
     {
-        commands.showAll();
+        String inputLine;   // will hold the full input line
+        String word1 = null;
+        String word2 = null;
+        String word3 = null;
+
+        inputLine = str;
+
+        try (Scanner tokenizer = new Scanner(inputLine)) {
+            if(tokenizer.hasNext()) {
+                word1 = tokenizer.next();      // get first word
+                if(tokenizer.hasNext()) {
+                    word2 = tokenizer.next();      // get second word
+                }
+                if(tokenizer.hasNext()) {
+                    word3 = tokenizer.next();      // get second word
+                }
+            }
+        }
+
+        // 现在检查这个词是否已知。如果是，创建一个命令
+        // 有了它。如果没有，创建一个“null”命令。
+        try
+        {
+            word1 = AGame._messages.getString(word1); // translate it
+        }
+        catch (MissingResourceException | NullPointerException e)
+        {
+            return new UnknownCommand(word1, word2, word3);
+        }
+        if(this._commands.isCommand(word1))
+        {
+            String cmdString = this._MYPACKAGE + word1.substring(0, 1).toUpperCase() + word1.substring(1) + "Command";
+            try
+            {
+                ACommand cmd = (ACommand) Class.forName(cmdString).newInstance();//通过 Class 类的 newInstance() 方法创建对象
+                cmd.addWords(word1, word2, word3);
+                /*使用Class类的中forName ()方法获得与字符串相应的Class对象 ，
+                动态加载和创建Class 对象，根据用户输入的字符串来创建对象
+                */
+                return cmd;
+            }
+            catch (ClassNotFoundException
+                    | InstantiationException
+                    | IllegalAccessException
+                    | SecurityException
+                    | IllegalArgumentException
+                    e )
+            {
+                return new UnknownCommand(word1, word2, word3);
+            }
+        }
+        else
+        {
+            return new UnknownCommand(word1, word2, word3);
+        }
     }
 }
 
